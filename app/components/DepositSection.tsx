@@ -46,6 +46,7 @@ export function DepositSection({
       return;
     }
 
+    const targetAsset = asset;
     let mounted = true;
 
     async function checkTrustline() {
@@ -70,7 +71,9 @@ export function DepositSection({
         }> = accountData.balances ?? [];
 
         const hasLine = balances.some(
-          (b) => b.asset_code === asset.code && b.asset_issuer === asset.issuer
+          (b) =>
+            b.asset_code === targetAsset.code &&
+            b.asset_issuer === targetAsset.issuer
         );
 
         setHasTrustline(hasLine);
