@@ -1,0 +1,25 @@
+name: Spike Investigation
+description: Propose a research spike or technical investigation for nairaramp-demo
+labels: ["spike"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question to answer
+      description: What primary question or technical hypothesis needs answering?
+    validations:
+      required: true
+  - type: textarea
+    id: what-to-investigate
+    attributes:
+      label: What to investigate
+      description: What components, APIs, or integration architectures need exploration?
+    validations:
+      required: true
+  - type: textarea
+    id: expected-output
+    attributes:
+      label: Expected output
+      description: What concrete deliverables (e.g. proof-of-concept, decision doc) should this spike produce?
+    validations:
+      required: true
