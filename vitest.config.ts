@@ -26,5 +26,14 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "jsdom",
+    server: {
+      deps: {
+        inline: [
+          "@nairaramp/core",
+          "@nairaramp/react",
+          "@stellar/typescript-wallet-sdk",
+        ],
+      },
+    },
   },
 });
