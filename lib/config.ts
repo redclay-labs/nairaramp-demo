@@ -17,10 +17,14 @@ export type AppConfig = ConfigSuccess | ConfigError;
  * The demo strictly requires network to be "testnet".
  */
 export function getConfig(
-  env: Record<string, string | undefined> = process.env
+  env?: Record<string, string | undefined>
 ): AppConfig {
-  const network = env.NEXT_PUBLIC_STELLAR_NETWORK;
-  const anchorId = env.NEXT_PUBLIC_NAIRARAMP_ANCHOR_ID;
+  const network = env
+    ? env.NEXT_PUBLIC_STELLAR_NETWORK
+    : process.env.NEXT_PUBLIC_STELLAR_NETWORK;
+  const anchorId = env
+    ? env.NEXT_PUBLIC_NAIRARAMP_ANCHOR_ID
+    : process.env.NEXT_PUBLIC_NAIRARAMP_ANCHOR_ID;
 
   if (network !== "testnet") {
     return {
