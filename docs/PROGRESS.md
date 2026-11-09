@@ -170,3 +170,16 @@
   - `pnpm test`: Ran Vitest suite (24 tests across 5 test files), all passed (exit code 0).
   - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
 - **Open issues:** None.
+
+## 2026-11-09 - Step 10: Seed issues and final audit
+
+- **What was built:**
+  - `docs/seed-issues/01.md` through `docs/seed-issues/09.md`: Created 9 actionable seed issue templates from real repository opportunities with Context citations, "Done when" checklists, files to touch, complexity ratings with reasoning (3 Trivial, 3 Medium, 3 High), and labels.
+  - `docs/seed-issues.md`: Created summary table of all 9 seed issues and exact non-interactive `gh issue create` commands.
+  - Conducted full project audit across testnet refusal, deposit flow, withdrawal flow, quickstart typechecks, README placeholders, CI configuration, documentation, templates, and strict upstream SDK usage boundaries.
+- **Commands run with results:**
+  - `pnpm lint`: Ran ESLint, passed with 0 errors (exit code 0).
+  - `pnpm typecheck`: Ran `tsc --noEmit`, passed with 0 errors (exit code 0).
+  - `pnpm test`: Ran Vitest suite (24 tests across 5 test files), all passed (exit code 0).
+  - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
+- **Open issues:** None.
