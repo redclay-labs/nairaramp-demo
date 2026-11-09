@@ -42,14 +42,13 @@ export function DepositSection({
   }, [address, isTestnet, config.ok]);
 
   useEffect(() => {
+    if (!address || !isTestnet || !asset) {
+      return;
+    }
+
     let mounted = true;
 
     async function checkTrustline() {
-      if (!address || !isTestnet || !asset) {
-        if (mounted) setHasTrustline(null);
-        return;
-      }
-
       try {
         const response = await fetch(
           `https://horizon-testnet.stellar.org/accounts/${address}`
