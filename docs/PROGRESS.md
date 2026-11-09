@@ -122,3 +122,18 @@
   - `pnpm test`: Ran Vitest suite (16 tests across 4 test files), all passed (exit code 0).
   - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
 - **Open issues:** None.
+
+## 2026-11-09 - Step 07: Withdraw section
+
+- **What was built:**
+  - `app/components/WithdrawSection.tsx`: Created client component visible only when connected on testnet. Renders "Cash out" button that calls `ramp.withdraw({ assetCode, amount? })`, opens popup window synchronously in click handler, subscribes to status changes via `ramp.watch`, invokes `ramp.completeWithdrawal(id)` exactly once when status reaches `pending_user_transfer_start`, renders `<StatusTimeline />`, displays Stellar transaction hash linked to `https://stellar.expert/explorer/testnet/tx/<hash>`, displays `NairaRampError` message and code (`Error [code]: message`), and stops active watcher subscription on component unmount.
+  - `app/page.tsx`: Mounted `WithdrawSection` alongside `DepositSection` and `WalletPanel`.
+  - `test/withdraw-section.test.tsx`: Created unit test suite verifying `WithdrawSection` behavior with mocked ramp: visibility checks, cash out initiation with optional amount and popup opening, `completeWithdrawal` called exactly once upon `pending_user_transfer_start`, watcher cleanup on unmount, and error rendering across `withdraw` failure, `completeWithdrawal` rejection, and watcher `onError`.
+  - `docs/DECISIONS.md`: Recorded synchronous popup opening and `completedWithdrawalRef` guard decisions.
+- **Commands run with results:**
+  - `pnpm lint`: Ran ESLint across workspace, passed with 0 errors (exit code 0).
+  - `pnpm typecheck`: Ran `tsc --noEmit`, passed with 0 errors (exit code 0).
+  - `pnpm test`: Ran Vitest suite (24 tests across 5 test files), all passed (exit code 0).
+  - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
+  - `node dev server probe`: Verified local development server is running and responding with HTTP status 200 at `http://localhost:3000`.
+- **Open issues:** None.
