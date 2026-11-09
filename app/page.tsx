@@ -1,7 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import { getConfig } from "../lib/config";
+import { DepositSection } from "./components/DepositSection";
 import { WalletPanel } from "./components/WalletPanel";
 
 export default function Home() {
+  const [address, setAddress] = useState<string | null>(null);
+  const [isTestnet, setIsTestnet] = useState<boolean>(true);
   const config = getConfig();
 
   if (!config.ok) {
@@ -27,7 +33,11 @@ export default function Home() {
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>NairaRamp demo</h1>
       <p>Testnet only</p>
-      <WalletPanel />
+      <WalletPanel
+        onAddressChange={setAddress}
+        onNetworkChange={setIsTestnet}
+      />
+      <DepositSection address={address} isTestnet={isTestnet} />
     </main>
   );
 }
