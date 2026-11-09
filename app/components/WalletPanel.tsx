@@ -10,9 +10,13 @@ import {
 
 export interface WalletPanelProps {
   onAddressChange?: (address: string | null) => void;
+  onNetworkChange?: (isTestnet: boolean) => void;
 }
 
-export function WalletPanel({ onAddressChange }: WalletPanelProps) {
+export function WalletPanel({
+  onAddressChange,
+  onNetworkChange,
+}: WalletPanelProps) {
   const [hasFreighter, setHasFreighter] = useState<boolean | null>(null);
   const [address, setAddress] = useState<string | null>(null);
   const [network, setNetwork] = useState<string | null>(null);
@@ -39,6 +43,7 @@ export function WalletPanel({ onAddressChange }: WalletPanelProps) {
         if (netRes.ok) {
           setNetwork(netRes.data.network);
           setIsTestnet(netRes.data.isTestnet);
+          onNetworkChange?.(netRes.data.isTestnet);
         }
       }
     }
@@ -48,7 +53,7 @@ export function WalletPanel({ onAddressChange }: WalletPanelProps) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [onNetworkChange]);
 
   const handleConnect = async () => {
     setLoading(true);
@@ -58,6 +63,7 @@ export function WalletPanel({ onAddressChange }: WalletPanelProps) {
     if (netRes.ok) {
       setNetwork(netRes.data.network);
       setIsTestnet(netRes.data.isTestnet);
+      onNetworkChange?.(netRes.data.isTestnet);
       if (!netRes.data.isTestnet) {
         setLoading(false);
         return;
