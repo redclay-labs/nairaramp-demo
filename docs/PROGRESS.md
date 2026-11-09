@@ -158,3 +158,15 @@
   - `pnpm test`: Ran Vitest suite (24 tests across 5 test files), all passed (exit code 0).
   - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
 - **Open issues:** None.
+
+## 2026-11-09 - Step 09: README and deploy docs
+
+- **What was built:**
+  - `README.md`: Updated README with two-sentence project description, live demo placeholder `Live demo: LIVE_DEMO_URL`, demo video placeholder `Demo video: DEMO_VIDEO_URL`, local run and execution steps, and links to `docs/quickstart.md`, `docs/MANUAL-TEST.md`, `CONTRIBUTING.md`, `https://github.com/redclay-labs/nairaramp-core`, and `https://github.com/redclay-labs/nairaramp-react`.
+  - `docs/DEPLOY.md`: Created deployment guide covering Vercel project import (framework Next.js, root directory the repo root, install command `pnpm install --frozen-lockfile`, environment variables from `.env.example`), and procedures for testing that the deployed application strictly refuses non-testnet networks via both wallet-level and config-level guards.
+- **Commands run with results:**
+  - `pnpm lint`: Ran ESLint, passed with 0 errors (exit code 0).
+  - `pnpm typecheck`: Ran `tsc --noEmit`, passed with 0 errors (exit code 0).
+  - `pnpm test`: Ran Vitest suite (24 tests across 5 test files), all passed (exit code 0).
+  - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
+- **Open issues:** None.
