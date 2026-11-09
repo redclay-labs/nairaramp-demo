@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getConfig } from "../lib/config";
 import { DepositSection } from "./components/DepositSection";
 import { WalletPanel } from "./components/WalletPanel";
+import { WithdrawSection } from "./components/WithdrawSection";
 
 export default function Home() {
   const [address, setAddress] = useState<string | null>(null);
@@ -38,6 +39,7 @@ export default function Home() {
         onNetworkChange={setIsTestnet}
       />
       <DepositSection address={address} isTestnet={isTestnet} />
+      <WithdrawSection address={address} isTestnet={isTestnet} />
     </main>
   );
 }
