@@ -88,3 +88,22 @@
   - `pnpm test`: Ran Vitest, 1 test passed (exit code 0).
   - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
 - **Open issues:** None.
+
+## 2026-11-09 - Step 05: Config and wallet connection
+
+- **What was built:**
+  - `lib/config.ts`: Added environment configuration validator checking `NEXT_PUBLIC_STELLAR_NETWORK` and `NEXT_PUBLIC_NAIRARAMP_ANCHOR_ID`. Strictly enforces `testnet` and returns typed error state when invalid.
+  - `test/config.test.ts`: Added unit tests verifying valid testnet configuration and error states for missing/invalid network or anchor ID.
+  - `docs/DECISIONS.md`: Recorded mapping of Freighter `isInstalled` to `isConnected` as exported by `@stellar/freighter-api@6.0.1`.
+  - `lib/wallet.ts`: Integrated `@stellar/freighter-api` with `isInstalled`, `connect` (request access, get address), `getNetwork`, and `shortenAddress`, returning typed results and never throwing raw errors.
+  - `lib/ramp.ts`: Added `makeRamp(address)` calling `createRamp` from `@nairaramp/core` with `network: "testnet"`, configured anchor ID, and `freighterSigner()`. Enforces error guard when config is invalid.
+  - `app/components/WalletPanel.tsx`: Created client component featuring connect button, shortened public key display, missing extension warning, wrong-network warning, and Friendbot link for connected key.
+  - `test/wallet-panel.test.tsx`: Added unit tests verifying `WalletPanel` states (missing extension warning, wrong-network warning, successful connection and Friendbot link, and error state) with mocked wallet module.
+  - `app/page.tsx`: Rendered `WalletPanel` on home page; when configuration is invalid, renders an error alert explaining why and nothing else.
+  - `test/smoke.test.tsx`: Updated smoke test suite to verify both valid configuration rendering and the error guard display.
+- **Commands run with results:**
+  - `pnpm lint`: Ran ESLint across workspace, passed with 0 errors (exit code 0).
+  - `pnpm typecheck`: Ran `tsc --noEmit`, passed with 0 errors (exit code 0).
+  - `pnpm test`: Ran Vitest suite (10 tests across 3 test files), all passed (exit code 0).
+  - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
+- **Open issues:** None.
