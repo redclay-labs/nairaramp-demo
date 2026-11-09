@@ -1,0 +1,45 @@
+name: Bug Report
+description: File a bug report for nairaramp-demo
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe what bug or unexpected behaviour occurred.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behaviour
+    attributes:
+      label: Expected behaviour
+      description: What did you expect to happen instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Detail the exact steps needed to reproduce the issue.
+      placeholder: |
+        1. Start dev server: pnpm dev
+        2. Connect Freighter on Testnet
+        3. Attempt deposit ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version or commit of nairaramp-demo are you running?
+      placeholder: "e.g. 0.1.0 or main"
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Provide screenshots or screen recordings showing the issue.
+      placeholder: Drag and drop screenshots or paste image URLs here.
+    validations:
+      required: true
