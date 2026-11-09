@@ -137,3 +137,24 @@
   - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
   - `node dev server probe`: Verified local development server is running and responding with HTTP status 200 at `http://localhost:3000`.
 - **Open issues:** None.
+
+## 2026-11-09 - Step 08: Quickstart
+
+- **What was built:**
+  - `docs/quickstart.md`: Created 15-minute quickstart guide with all required sections:
+    1. What you will build and time estimate (15 minutes).
+    2. Prerequisites: Node 20+, React or Next.js app, Freighter on Testnet funded with Friendbot and SRT trustline.
+    3. Install: exact versions from `VERSIONS.md` (`@nairaramp/core@0.1.0`, `@nairaramp/react@0.1.0`, `@stellar/freighter-api@6.0.1`).
+    4. Create a ramp: `createRamp` with `network: "testnet"`, `anchorId: "sdf-testanchor"`, and `signer: freighterSigner()`.
+    5. Add the button: `<PayWithNaira />` and `<StatusTimeline />` components.
+    6. Run it and complete a deposit: end-to-end description of user interactions, anchor popup, and timeline transitions.
+    7. Next steps: withdrawals link to `app/components/WithdrawSection.tsx` in this repository, choosing a real anchor linking to `docs/anchors-nigeria.md` in `nairaramp-core` on GitHub, and the mainnet guard linking to `docs/API.md` in `nairaramp-core` on GitHub.
+  - Verified and type-checked all code samples in temporary directory `app/_quickstart-check/` via `pnpm typecheck` before deleting it.
+  - `docs/DECISIONS.md`: Recorded decision to specify amount 5 in quickstart sample to comply with test anchor limits.
+- **Commands run with results:**
+  - `pnpm typecheck` on `app/_quickstart-check/`: Verified all quickstart code samples compile cleanly with 0 errors (exit code 0).
+  - `pnpm lint`: Ran ESLint, passed with 0 errors (exit code 0).
+  - `pnpm typecheck`: Ran `tsc --noEmit` across workspace, passed with 0 errors (exit code 0).
+  - `pnpm test`: Ran Vitest suite (24 tests across 5 test files), all passed (exit code 0).
+  - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
+- **Open issues:** None.
