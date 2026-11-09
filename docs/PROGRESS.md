@@ -107,3 +107,18 @@
   - `pnpm test`: Ran Vitest suite (10 tests across 3 test files), all passed (exit code 0).
   - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
 - **Open issues:** None.
+
+## 2026-11-09 - Step 06: Deposit section
+
+- **What was built:**
+  - `docs/DECISIONS.md`: Recorded decision to use `usePayWithNaira` in `DepositSection` because `PayWithNaira` does not expose the `TransactionStatus` required by `StatusTimeline`.
+  - `app/components/DepositSection.tsx`: Created client component visible only when connected on testnet. Uses `getAnchor(anchorId)` from `@nairaramp/core` to select the first asset, queries Horizon testnet balances to display trustline instructions with asset code and issuer when missing, and renders the deposit flow with `StatusTimeline` driven by `usePayWithNaira` and `makeRamp`.
+  - `test/deposit-section.test.tsx`: Added unit test suite covering visibility when disconnected/connected, missing trustline warning, optional amount input handling, awaiting user anchor popup state, and error handling with reset.
+  - `app/components/WalletPanel.tsx`: Added `onNetworkChange` callback prop to notify parent of active network state changes.
+  - `app/page.tsx`: Updated Home page to coordinate wallet connection and network state with `DepositSection`.
+- **Commands run with results:**
+  - `pnpm lint`: Ran ESLint across workspace, passed with 0 errors (exit code 0).
+  - `pnpm typecheck`: Ran `tsc --noEmit`, passed with 0 errors (exit code 0).
+  - `pnpm test`: Ran Vitest suite (16 tests across 4 test files), all passed (exit code 0).
+  - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
+- **Open issues:** None.
