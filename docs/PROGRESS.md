@@ -48,3 +48,19 @@
   - `pnpm test`: Ran Vitest smoke test, passed 1 test (exit code 0).
   - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
 - **Open issues:** None.
+
+## 2026-11-09 - Step 03: Continuous integration
+
+- **What was built:**
+  - `.github/workflows/ci.yml`: Created GitHub Actions CI pipeline running on `pull_request` and `push` to `main` with Node `20` on `ubuntu-latest`.
+  - Configured step sequence: `actions/checkout@v4` -> `pnpm/action-setup@v4` -> `actions/setup-node@v4` (with pnpm cache) -> `pnpm install --frozen-lockfile` -> `pnpm lint` -> `pnpm typecheck` -> `pnpm test` -> `pnpm build`.
+  - Added build environment variables `NEXT_PUBLIC_STELLAR_NETWORK=testnet` and `NEXT_PUBLIC_NAIRARAMP_ANCHOR_ID=sdf-testanchor` to the build step.
+  - Validated YAML syntax via `pnpm dlx js-yaml .github/workflows/ci.yml`.
+  - Logged GitHub Action major versions in `docs/DECISIONS.md`.
+- **Commands run with results:**
+  - `pnpm dlx js-yaml .github/workflows/ci.yml`: Successfully parsed workflow YAML into valid JSON (exit code 0).
+  - `pnpm lint`: Ran ESLint, passed with 0 errors (exit code 0).
+  - `pnpm typecheck`: Ran `tsc --noEmit`, passed with 0 errors (exit code 0).
+  - `pnpm test`: Ran Vitest, 1 test passed (exit code 0).
+  - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
+- **Open issues:** None.
