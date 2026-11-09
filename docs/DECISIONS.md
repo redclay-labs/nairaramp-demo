@@ -9,3 +9,6 @@ GitHub owner: redclay-labs
 | 2026-11-09 | Use `next-tmp` directory with `--disable-git` and `--no-agents-md` | npm project naming disallows leading period in `.next-tmp`; flags avoid nested git and preserve root AGENTS.md |
 | 2026-11-09 | Use actions/checkout@v4, pnpm/action-setup@v4, actions/setup-node@v4 | Current major GitHub Actions versions supporting Node 20 with pnpm caching |
 | 2026-11-09 | Map Freighter isInstalled to isConnected | @stellar/freighter-api exports isConnected() to test extension availability; isInstalled is not exported in v6.0.1 |
+| 2026-11-09 | Use usePayWithNaira in DepositSection | PayWithNaira does not expose TransactionStatus or status callbacks required for StatusTimeline; usePayWithNaira provides reactive status |
+
+| 2026-11-09 | Map Freighter isInstalled to isConnected | @stellar/freighter-api exports isConnected() to test extension availability; isInstalled is not exported in v6.0.1 |
