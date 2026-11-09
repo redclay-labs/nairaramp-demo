@@ -64,3 +64,27 @@
   - `pnpm test`: Ran Vitest, 1 test passed (exit code 0).
   - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
 - **Open issues:** None.
+
+## 2026-11-09 - Step 04: License, docs, templates
+
+- **What was built:**
+  - `package.json`: Specified `"license": "Apache-2.0"`.
+  - `LICENSE`: Added Apache-2.0 license text with copyright 2026 John Imeobong Abasiediedu.
+  - `SECURITY.md`: Added security policy referencing GitHub private vulnerability reporting and scope boundaries (`nairaramp-core` for SDK/logic, `nairaramp-react` for components).
+  - `.env.example`: Added environment template with placeholders (`NEXT_PUBLIC_STELLAR_NETWORK=testnet`, `NEXT_PUBLIC_NAIRARAMP_ANCHOR_ID=sdf-testanchor`).
+  - `docs/MANUAL-TEST.md`: Created manual testnet verification checklist covering wallet connection, deposit flow, withdrawal flow, and wrong-network warning.
+  - `CONTRIBUTING.md`: Created contributing guide with required sections in exact order: project description (two sentences), setup instructions, test commands, scope boundaries, branching and PR rules ("Closes #n", screenshots required), Stellar Wave participation guidelines, and testnet code rules.
+  - `README.md`: Created README stub with heading, one-line summary, "Testnet only" notice, and links to governance documents and related repositories.
+  - `.github/ISSUE_TEMPLATE/config.yml`: Configured `blank_issues_enabled: false`.
+  - `.github/ISSUE_TEMPLATE/bug.yml`: Created bug issue form with required screenshots textarea and label `bug`.
+  - `.github/ISSUE_TEMPLATE/feature.yml`: Created feature issue form with required "Done when" checklist, required screenshots textarea, and label `enhancement`.
+  - `.github/ISSUE_TEMPLATE/spike.yml`: Created spike investigation issue form with label `spike`.
+  - `.github/pull_request_template.md`: Created PR template with "Closes #", summary, test evidence, and verification checklist.
+  - Validated all YAML templates using `pnpm dlx js-yaml`.
+- **Commands run with results:**
+  - `pnpm dlx js-yaml ...`: Parsed all issue form YAML files successfully (exit code 0).
+  - `pnpm lint`: Ran ESLint, passed with 0 errors (exit code 0).
+  - `pnpm typecheck`: Ran `tsc --noEmit`, passed with 0 errors (exit code 0).
+  - `pnpm test`: Ran Vitest, 1 test passed (exit code 0).
+  - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
+- **Open issues:** None.
