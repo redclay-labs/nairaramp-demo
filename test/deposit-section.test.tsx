@@ -45,6 +45,21 @@ describe("DepositSection component", () => {
       error: undefined,
       reset: mockReset,
     });
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        balances: [
+          {
+            asset_type: "credit_alphanum4",
+            asset_code: "SRT",
+            asset_issuer:
+              "GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B",
+            balance: "100.0",
+          },
+        ],
+      }),
+    } as unknown as Response);
   });
 
   afterEach(() => {
