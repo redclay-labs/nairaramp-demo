@@ -176,4 +176,73 @@ describe("DepositSection component", () => {
 
     expect(mockReset).toHaveBeenCalled();
   });
+
+  it("validates invalid deposit amount without calling start", () => {
+    render(<DepositSection address={testAddress} isTestnet={true} />);
+
+    const amountInput = screen.getByLabelText(/Amount \(optional\):/i);
+    fireEvent.change(amountInput, { target: { value: "-10" } });
+
+    const payButton = screen.getByRole("button", { name: "Pay with Naira" });
+    fireEvent.click(payButton);
+
+    expect(mockStart).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toContain(
+      "Amount must be a positive number"
+    );
+  });
+
+  it("displays completion banner with transactionId and resets on button click", () => {
+    vi.mocked(reactModule.usePayWithNaira).mockReturnValue({
+      start: mockStart,
+      phase: "completed",
+      status: "completed",
+      transactionId: "dep-999",
+      url: undefined,
+      error: undefined,
+      reset: mockReset,
+    });
+
+    render(<DepositSection address={testAddress} isTestnet={true} />);
+
+    expect(screen.getByRole("status").textContent).toContain("dep-999");
+
+    const resetButton = screen.getByRole("button", {
+      name: /Start another deposit/i,
+    });
+    fireEvent.click(resetButton);
+    expect(mockReset).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows re-checking trustline after Horizon error", async () => {
+    vi.spyOn(globalThis, "fetch")
+      .mockRejectedValueOnce(new Error("Network offline"))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          balances: [
+            {
+              asset_type: "credit_alphanum4",
+              asset_code: "SRT",
+              asset_issuer:
+                "GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B",
+              balance: "10.0",
+            },
+          ],
+        }),
+      } as unknown as Response);
+
+    render(<DepositSection address={testAddress} isTestnet={true} />);
+
+    const recheckBtn = await screen.findByRole("button", {
+      name: /Re-check trustline/i,
+    });
+    fireEvent.click(recheckBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("button", { name: /Re-check trustline/i })
+      ).toBeNull();
+    });
+  });
 });

@@ -227,4 +227,65 @@ describe("WithdrawSection component", () => {
       );
     });
   });
+
+  it("validates invalid withdrawal amount without calling ramp.withdraw", () => {
+    render(<WithdrawSection address={testAddress} isTestnet={true} />);
+
+    const amountInput = screen.getByLabelText(/Amount \(SRT, optional\):/i);
+    fireEvent.change(amountInput, { target: { value: "not-a-number" } });
+
+    const cashOutButton = screen.getByRole("button", { name: "Cash out" });
+    fireEvent.click(cashOutButton);
+
+    expect(mockWithdraw).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toContain(
+      "Amount must be a positive number"
+    );
+  });
+
+  it("handles onComplete with stellar_transaction_id and allows starting another withdrawal", async () => {
+    render(<WithdrawSection address={testAddress} isTestnet={true} />);
+
+    const cashOutButton = screen.getByRole("button", { name: "Cash out" });
+    fireEvent.click(cashOutButton);
+
+    await waitFor(() => {
+      expect(mockWatch).toHaveBeenCalled();
+    });
+
+    capturedHandlers?.onComplete?.({
+      id: "withdraw-123",
+      status: "completed",
+      stellar_transaction_id: "finalhash789",
+    } as unknown as AnchorTransaction);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("link", { name: "finalhash789" })
+      ).toBeDefined();
+    });
+
+    const resetButton = screen.getByRole("button", {
+      name: /Start another withdrawal/i,
+    });
+    fireEvent.click(resetButton);
+
+    expect(screen.queryByRole("link", { name: "finalhash789" })).toBeNull();
+  });
+
+  it("shows popup blocked notice when window.open returns null", async () => {
+    vi.spyOn(window, "open").mockReturnValueOnce(null);
+
+    render(<WithdrawSection address={testAddress} isTestnet={true} />);
+
+    const cashOutButton = screen.getByRole("button", { name: "Cash out" });
+    fireEvent.click(cashOutButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Popup blocked by browser\./i)).toBeDefined();
+      expect(
+        screen.getByRole("link", { name: /Continue to the anchor/i })
+      ).toBeDefined();
+    });
+  });
 });

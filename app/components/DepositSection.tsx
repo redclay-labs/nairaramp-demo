@@ -1,45 +1,50 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAnchor } from "@nairaramp/core";
 import type { TransactionStatus } from "@nairaramp/core";
 import { StatusTimeline, usePayWithNaira } from "@nairaramp/react";
 import { getConfig } from "../../lib/config";
 import { makeRamp } from "../../lib/ramp";
+import { validateOptionalAmount } from "../../lib/validation";
 
 export interface DepositSectionProps {
   address: string | null;
   isTestnet?: boolean;
 }
 
+type TrustlineState = "idle" | "checking" | "present" | "missing" | "error";
+
 export function DepositSection({
   address,
   isTestnet = true,
 }: DepositSectionProps) {
   const [amount, setAmount] = useState<string>("");
-  const [hasTrustline, setHasTrustline] = useState<boolean | null>(null);
+  const [trustlineState, setTrustlineState] = useState<TrustlineState>("idle");
+  const [checkNonce, setCheckNonce] = useState<number>(0);
 
   const config = getConfig();
+  const anchorId = config.ok ? config.anchorId : null;
 
   const anchor = useMemo(() => {
-    if (!config.ok) return null;
+    if (!anchorId) return null;
     try {
-      return getAnchor(config.anchorId);
+      return getAnchor(anchorId);
     } catch {
       return null;
     }
-  }, [config]);
+  }, [anchorId]);
 
   const asset = anchor?.assets?.[0] ?? null;
 
   const ramp = useMemo(() => {
-    if (!address || !isTestnet || !config.ok) return null;
+    if (!address || !isTestnet || !anchorId) return null;
     try {
       return makeRamp(address);
     } catch {
       return null;
     }
-  }, [address, isTestnet, config.ok]);
+  }, [address, isTestnet, anchorId]);
 
   useEffect(() => {
     if (!address || !isTestnet || !asset) {
@@ -50,6 +55,7 @@ export function DepositSection({
     let mounted = true;
 
     async function checkTrustline() {
+      setTrustlineState("checking");
       try {
         const response = await fetch(
           `https://horizon-testnet.stellar.org/accounts/${address}`
@@ -59,7 +65,7 @@ export function DepositSection({
 
         if (!response.ok) {
           // Unfunded or non-existent account has no trustline
-          setHasTrustline(false);
+          setTrustlineState("missing");
           return;
         }
 
@@ -76,10 +82,10 @@ export function DepositSection({
             b.asset_issuer === targetAsset.issuer
         );
 
-        setHasTrustline(hasLine);
+        setTrustlineState(hasLine ? "present" : "missing");
       } catch {
         if (mounted) {
-          setHasTrustline(false);
+          setTrustlineState("error");
         }
       }
     }
@@ -89,7 +95,11 @@ export function DepositSection({
     return () => {
       mounted = false;
     };
-  }, [address, isTestnet, asset]);
+  }, [address, isTestnet, asset, checkNonce]);
+
+  const handleRecheckTrustline = useCallback(() => {
+    setCheckNonce((n) => n + 1);
+  }, []);
 
   // Hook must be called conditionally safe: ramp is created when connected on testnet
   // Using an inner component when ramp & asset are ready ensures hooks are not called conditionally.
@@ -103,7 +113,8 @@ export function DepositSection({
       asset={asset}
       amount={amount}
       onAmountChange={setAmount}
-      hasTrustline={hasTrustline}
+      trustlineState={trustlineState}
+      onRecheckTrustline={handleRecheckTrustline}
     />
   );
 }
@@ -113,7 +124,8 @@ interface DepositFormProps {
   asset: { code: string; issuer: string };
   amount: string;
   onAmountChange: (value: string) => void;
-  hasTrustline: boolean | null;
+  trustlineState: TrustlineState;
+  onRecheckTrustline: () => void;
 }
 
 function DepositForm({
@@ -121,16 +133,30 @@ function DepositForm({
   asset,
   amount,
   onAmountChange,
-  hasTrustline,
+  trustlineState,
+  onRecheckTrustline,
 }: DepositFormProps) {
-  const { start, phase, status, url, error, reset } = usePayWithNaira({
-    ramp,
-    assetCode: asset.code,
-  });
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const { start, phase, status, transactionId, url, error, reset } =
+    usePayWithNaira({
+      ramp,
+      assetCode: asset.code,
+    });
 
   const handleStart = async () => {
-    const trimmed = amount.trim();
-    await start(trimmed ? trimmed : undefined);
+    const validated = validateOptionalAmount(amount);
+    if (!validated.ok) {
+      setValidationError(validated.error);
+      return;
+    }
+    setValidationError(null);
+    await start(validated.value);
+  };
+
+  const handleReset = () => {
+    setValidationError(null);
+    onAmountChange("");
+    reset();
   };
 
   return (
@@ -148,7 +174,7 @@ function DepositForm({
         Deposit with Naira ({asset.code})
       </h2>
 
-      {hasTrustline === false && (
+      {trustlineState === "missing" && (
         <div
           role="note"
           style={{
@@ -162,9 +188,48 @@ function DepositForm({
           <p style={{ margin: "0 0 0.25rem 0", fontWeight: "bold" }}>
             Add a trustline in Freighter for {asset.code}
           </p>
-          <p style={{ margin: 0, fontSize: "0.875rem", wordBreak: "break-all" }}>
+          <p style={{ margin: "0 0 0.5rem 0", fontSize: "0.875rem", wordBreak: "break-all" }}>
             Issuer: {asset.issuer}
           </p>
+          <button
+            type="button"
+            onClick={onRecheckTrustline}
+            style={{
+              padding: "0.25rem 0.75rem",
+              fontSize: "0.875rem",
+              cursor: "pointer",
+            }}
+          >
+            Re-check trustline
+          </button>
+        </div>
+      )}
+
+      {trustlineState === "error" && (
+        <div
+          role="note"
+          style={{
+            padding: "0.75rem",
+            backgroundColor: "#fff3e0",
+            border: "1px solid #ffcc80",
+            borderRadius: "4px",
+            marginBottom: "0.75rem",
+          }}
+        >
+          <p style={{ margin: "0 0 0.5rem 0", fontSize: "0.875rem" }}>
+            Could not verify {asset.code} trustline on Horizon Testnet.
+          </p>
+          <button
+            type="button"
+            onClick={onRecheckTrustline}
+            style={{
+              padding: "0.25rem 0.75rem",
+              fontSize: "0.875rem",
+              cursor: "pointer",
+            }}
+          >
+            Re-check trustline
+          </button>
         </div>
       )}
 
@@ -178,9 +243,14 @@ function DepositForm({
         <input
           id="deposit-amount"
           type="text"
+          inputMode="decimal"
           value={amount}
-          onChange={(e) => onAmountChange(e.target.value)}
+          onChange={(e) => {
+            setValidationError(null);
+            onAmountChange(e.target.value);
+          }}
           placeholder="e.g. 5000"
+          aria-invalid={validationError ? "true" : undefined}
           style={{
             padding: "0.5rem",
             borderRadius: "4px",
@@ -189,6 +259,18 @@ function DepositForm({
             maxWidth: "300px",
           }}
         />
+        {validationError && (
+          <p
+            role="alert"
+            style={{
+              margin: "0.25rem 0 0 0",
+              color: "#c62828",
+              fontSize: "0.875rem",
+            }}
+          >
+            {validationError}
+          </p>
+        )}
       </div>
 
       <div style={{ marginBottom: "1rem" }}>
@@ -233,6 +315,40 @@ function DepositForm({
           </p>
         )}
 
+        {phase === "processing" && (
+          <p style={{ margin: "0.5rem 0", color: "#1976d2" }}>
+            Processing your deposit...
+          </p>
+        )}
+
+        {phase === "completed" && (
+          <div
+            role="status"
+            style={{
+              padding: "0.5rem",
+              backgroundColor: "#e8f5e9",
+              color: "#2e7d32",
+              borderRadius: "4px",
+              marginTop: "0.5rem",
+            }}
+          >
+            <p style={{ margin: "0 0 0.5rem 0", fontWeight: "bold" }}>
+              Deposit completed
+              {transactionId ? ` (ID: ${transactionId})` : ""}
+            </p>
+            <button
+              type="button"
+              onClick={handleReset}
+              style={{
+                padding: "0.25rem 0.75rem",
+                cursor: "pointer",
+              }}
+            >
+              Start another deposit
+            </button>
+          </div>
+        )}
+
         {phase === "failed" && (
           <div
             role="alert"
@@ -249,7 +365,7 @@ function DepositForm({
             </p>
             <button
               type="button"
-              onClick={reset}
+              onClick={handleReset}
               style={{
                 padding: "0.25rem 0.75rem",
                 cursor: "pointer",

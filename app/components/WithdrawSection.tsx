@@ -6,6 +6,7 @@ import type { TransactionStatus, WatchSubscription } from "@nairaramp/core";
 import { StatusTimeline } from "@nairaramp/react";
 import { getConfig } from "../../lib/config";
 import { makeRamp } from "../../lib/ramp";
+import { validateOptionalAmount } from "../../lib/validation";
 
 export interface WithdrawSectionProps {
   address: string | null;
@@ -16,10 +17,51 @@ export function WithdrawSection({
   address,
   isTestnet = true,
 }: WithdrawSectionProps) {
+  const config = getConfig();
+  const anchorId = config.ok ? config.anchorId : null;
+
+  const anchor = useMemo(() => {
+    if (!anchorId) return null;
+    try {
+      return getAnchor(anchorId);
+    } catch {
+      return null;
+    }
+  }, [anchorId]);
+
+  const asset = anchor?.assets?.[0] ?? null;
+
+  const ramp = useMemo(() => {
+    if (!address || !isTestnet || !anchorId) return null;
+    try {
+      return makeRamp(address);
+    } catch {
+      return null;
+    }
+  }, [address, isTestnet, anchorId]);
+
+  if (!address || !isTestnet || !config.ok || !asset || !ramp) {
+    return null;
+  }
+
+  return <WithdrawForm key={address} ramp={ramp} asset={asset} />;
+}
+
+interface WithdrawFormProps {
+  ramp: ReturnType<typeof makeRamp>;
+  asset: { code: string; issuer: string };
+}
+
+function WithdrawForm({ ramp, asset }: WithdrawFormProps) {
   const [amount, setAmount] = useState<string>("");
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [status, setStatus] = useState<TransactionStatus | undefined>(undefined);
+  const [statusMessage, setStatusMessage] = useState<string | undefined>(
+    undefined
+  );
   const [txHash, setTxHash] = useState<string | null>(null);
   const [anchorUrl, setAnchorUrl] = useState<string | null>(null);
+  const [popupBlocked, setPopupBlocked] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<{ message: string; code: string } | null>(
     null
@@ -28,28 +70,6 @@ export function WithdrawSection({
   const subscriptionRef = useRef<WatchSubscription | null>(null);
   const completedWithdrawalRef = useRef<boolean>(false);
   const isMountedRef = useRef<boolean>(true);
-
-  const config = getConfig();
-
-  const anchor = useMemo(() => {
-    if (!config.ok) return null;
-    try {
-      return getAnchor(config.anchorId);
-    } catch {
-      return null;
-    }
-  }, [config]);
-
-  const asset = anchor?.assets?.[0] ?? null;
-
-  const ramp = useMemo(() => {
-    if (!address || !isTestnet || !config.ok) return null;
-    try {
-      return makeRamp(address);
-    } catch {
-      return null;
-    }
-  }, [address, isTestnet, config.ok]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -62,15 +82,37 @@ export function WithdrawSection({
     };
   }, []);
 
-  if (!address || !isTestnet || !config.ok || !asset || !ramp) {
-    return null;
-  }
+  const handleReset = () => {
+    if (subscriptionRef.current) {
+      subscriptionRef.current.stop();
+      subscriptionRef.current = null;
+    }
+    completedWithdrawalRef.current = false;
+    setAmount("");
+    setValidationError(null);
+    setStatus(undefined);
+    setStatusMessage(undefined);
+    setTxHash(null);
+    setAnchorUrl(null);
+    setPopupBlocked(false);
+    setError(null);
+    setLoading(false);
+  };
 
   const handleCashOut = async () => {
+    const validated = validateOptionalAmount(amount);
+    if (!validated.ok) {
+      setValidationError(validated.error);
+      return;
+    }
+
+    setValidationError(null);
     setError(null);
     setTxHash(null);
     setStatus(undefined);
+    setStatusMessage(undefined);
     setAnchorUrl(null);
+    setPopupBlocked(false);
     setLoading(true);
     completedWithdrawalRef.current = false;
 
@@ -82,11 +124,14 @@ export function WithdrawSection({
       popup = null;
     }
 
+    if (!popup) {
+      setPopupBlocked(true);
+    }
+
     try {
-      const trimmed = amount.trim();
       const result = await ramp.withdraw({
         assetCode: asset.code,
-        amount: trimmed ? trimmed : undefined,
+        amount: validated.value,
       });
 
       if (popup && !popup.closed && result.url) {
@@ -100,9 +145,12 @@ export function WithdrawSection({
       }
 
       subscriptionRef.current = ramp.watch(result.id, {
-        onStatus: async (newStatus) => {
+        onStatus: async (newStatus, tx) => {
           if (!isMountedRef.current) return;
           setStatus(newStatus as TransactionStatus);
+          if (tx?.message) {
+            setStatusMessage(tx.message);
+          }
 
           if (
             newStatus === "pending_user_transfer_start" &&
@@ -116,6 +164,7 @@ export function WithdrawSection({
               }
             } catch (err) {
               if (!isMountedRef.current) return;
+              setLoading(false);
               if (isNairaRampError(err)) {
                 setError({ message: err.message, code: err.code });
               } else if (err instanceof NairaRampError) {
@@ -133,6 +182,9 @@ export function WithdrawSection({
         onComplete: (tx) => {
           if (!isMountedRef.current) return;
           setStatus("completed");
+          if (tx?.message) {
+            setStatusMessage(tx.message);
+          }
           if (tx.stellar_transaction_id) {
             setTxHash(tx.stellar_transaction_id);
           }
@@ -196,9 +248,14 @@ export function WithdrawSection({
         <input
           id="withdraw-amount"
           type="text"
+          inputMode="decimal"
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(e) => {
+            setValidationError(null);
+            setAmount(e.target.value);
+          }}
           placeholder="e.g. 50"
+          aria-invalid={validationError ? "true" : undefined}
           style={{
             padding: "0.5rem",
             borderRadius: "4px",
@@ -207,24 +264,57 @@ export function WithdrawSection({
             maxWidth: "300px",
           }}
         />
+        {validationError && (
+          <p
+            role="alert"
+            style={{
+              margin: "0.25rem 0 0 0",
+              color: "#c62828",
+              fontSize: "0.875rem",
+            }}
+          >
+            {validationError}
+          </p>
+        )}
       </div>
 
       <div style={{ marginBottom: "1rem" }}>
-        <button
-          type="button"
-          onClick={handleCashOut}
-          disabled={loading}
-          style={{
-            padding: "0.5rem 1rem",
-            fontSize: "1rem",
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Processing..." : "Cash out"}
-        </button>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={handleCashOut}
+            disabled={loading}
+            style={{
+              padding: "0.5rem 1rem",
+              fontSize: "1rem",
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Processing..." : "Cash out"}
+          </button>
+
+          {(status === "completed" || error !== null) && (
+            <button
+              type="button"
+              onClick={handleReset}
+              style={{
+                padding: "0.5rem 1rem",
+                fontSize: "1rem",
+                cursor: "pointer",
+              }}
+            >
+              Start another withdrawal
+            </button>
+          )}
+        </div>
 
         {anchorUrl && (
           <p style={{ margin: "0.5rem 0" }}>
+            {popupBlocked && (
+              <span style={{ marginRight: "0.5rem", color: "#e65100" }}>
+                Popup blocked by browser.
+              </span>
+            )}
             <a
               href={anchorUrl}
               target="_blank"
@@ -272,8 +362,7 @@ export function WithdrawSection({
         )}
       </div>
 
-      <StatusTimeline status={status} />
+      <StatusTimeline status={status} message={statusMessage} />
     </section>
   );
 }
-
