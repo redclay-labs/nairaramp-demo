@@ -11,6 +11,8 @@ import { validateOptionalAmount } from "../../lib/validation";
 export interface DepositSectionProps {
   address: string | null;
   isTestnet?: boolean;
+  anchorId?: string;
+  assetCode?: string;
 }
 
 type TrustlineState = "idle" | "checking" | "present" | "missing" | "error";
@@ -18,13 +20,15 @@ type TrustlineState = "idle" | "checking" | "present" | "missing" | "error";
 export function DepositSection({
   address,
   isTestnet = true,
+  anchorId: anchorIdProp,
+  assetCode: assetCodeProp,
 }: DepositSectionProps) {
   const [amount, setAmount] = useState<string>("");
   const [trustlineState, setTrustlineState] = useState<TrustlineState>("idle");
   const [checkNonce, setCheckNonce] = useState<number>(0);
 
   const config = getConfig();
-  const anchorId = config.ok ? config.anchorId : null;
+  const anchorId = anchorIdProp ?? (config.ok ? config.anchorId : null);
 
   const anchor = useMemo(() => {
     if (!anchorId) return null;
@@ -35,12 +39,18 @@ export function DepositSection({
     }
   }, [anchorId]);
 
-  const asset = anchor?.assets?.[0] ?? null;
+  const asset = useMemo(() => {
+    if (!anchor?.assets?.length) return null;
+    if (assetCodeProp) {
+      return anchor.assets.find((a) => a.code === assetCodeProp) ?? anchor.assets[0];
+    }
+    return anchor.assets[0];
+  }, [anchor, assetCodeProp]);
 
   const ramp = useMemo(() => {
     if (!address || !isTestnet || !anchorId) return null;
     try {
-      return makeRamp(address);
+      return makeRamp(address, anchorId);
     } catch {
       return null;
     }
@@ -109,6 +119,7 @@ export function DepositSection({
 
   return (
     <DepositForm
+      key={`${address}-${anchorId}-${asset.code}`}
       ramp={ramp}
       asset={asset}
       amount={amount}

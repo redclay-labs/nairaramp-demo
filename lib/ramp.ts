@@ -7,7 +7,7 @@ export type { Ramp };
  * Creates a Ramp instance configured for Stellar Testnet using the active Freighter signer.
  * Enforces testnet-only policy and throws if application configuration is invalid.
  */
-export function makeRamp(address?: string): Ramp {
+export function makeRamp(address?: string, anchorIdOverride?: string): Ramp {
   const config = getConfig();
 
   if (!config.ok) {
@@ -17,9 +17,11 @@ export function makeRamp(address?: string): Ramp {
   // address is accepted to bind to the connected wallet session
   void address;
 
+  const anchorId = anchorIdOverride?.trim() || config.anchorId;
+
   return createRamp({
     network: "testnet",
-    anchorId: config.anchorId,
+    anchorId,
     signer: freighterSigner(),
   });
 }

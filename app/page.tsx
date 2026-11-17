@@ -1,15 +1,31 @@
 "use client";
 
 import { useState } from "react";
+import { getAnchor } from "@nairaramp/core";
 import { getConfig } from "../lib/config";
+import { AnchorSelector } from "./components/AnchorSelector";
 import { DepositSection } from "./components/DepositSection";
 import { WalletPanel } from "./components/WalletPanel";
 import { WithdrawSection } from "./components/WithdrawSection";
 
 export default function Home() {
+  const config = getConfig();
+  const defaultAnchorId = config.ok ? config.anchorId : "";
+  const defaultAssetCode = (() => {
+    if (!defaultAnchorId) return "";
+    try {
+      return getAnchor(defaultAnchorId).assets?.[0]?.code ?? "";
+    } catch {
+      return "";
+    }
+  })();
+
   const [address, setAddress] = useState<string | null>(null);
   const [isTestnet, setIsTestnet] = useState<boolean>(true);
-  const config = getConfig();
+  const [selectedAnchorId, setSelectedAnchorId] =
+    useState<string>(defaultAnchorId);
+  const [selectedAssetCode, setSelectedAssetCode] =
+    useState<string>(defaultAssetCode);
 
   if (!config.ok) {
     return (
@@ -38,8 +54,27 @@ export default function Home() {
         onAddressChange={setAddress}
         onNetworkChange={setIsTestnet}
       />
-      <DepositSection address={address} isTestnet={isTestnet} />
-      <WithdrawSection address={address} isTestnet={isTestnet} />
+      <AnchorSelector
+        selectedAnchorId={selectedAnchorId}
+        selectedAssetCode={selectedAssetCode}
+        onAnchorChange={(nextAnchorId, nextAssetCode) => {
+          setSelectedAnchorId(nextAnchorId);
+          setSelectedAssetCode(nextAssetCode);
+        }}
+        onAssetChange={setSelectedAssetCode}
+      />
+      <DepositSection
+        address={address}
+        isTestnet={isTestnet}
+        anchorId={selectedAnchorId}
+        assetCode={selectedAssetCode}
+      />
+      <WithdrawSection
+        address={address}
+        isTestnet={isTestnet}
+        anchorId={selectedAnchorId}
+        assetCode={selectedAssetCode}
+      />
     </main>
   );
 }

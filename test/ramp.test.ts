@@ -63,4 +63,26 @@ describe("lib/ramp", () => {
       signer: mockSigner,
     });
   });
+
+  it("uses anchorIdOverride when provided", () => {
+    process.env.NEXT_PUBLIC_STELLAR_NETWORK = "testnet";
+    process.env.NEXT_PUBLIC_NAIRARAMP_ANCHOR_ID = "sdf-testanchor";
+
+    const mockSigner = {
+      getPublicKey: vi.fn(),
+      signTransaction: vi.fn(),
+    };
+    const mockRamp = { anchor: { id: "custom-anchor" } } as unknown as core.Ramp;
+
+    vi.mocked(core.freighterSigner).mockReturnValue(mockSigner);
+    vi.mocked(core.createRamp).mockReturnValue(mockRamp);
+
+    makeRamp("GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5", "custom-anchor");
+
+    expect(core.createRamp).toHaveBeenCalledWith({
+      network: "testnet",
+      anchorId: "custom-anchor",
+      signer: mockSigner,
+    });
+  });
 });

@@ -11,14 +11,18 @@ import { validateOptionalAmount } from "../../lib/validation";
 export interface WithdrawSectionProps {
   address: string | null;
   isTestnet?: boolean;
+  anchorId?: string;
+  assetCode?: string;
 }
 
 export function WithdrawSection({
   address,
   isTestnet = true,
+  anchorId: anchorIdProp,
+  assetCode: assetCodeProp,
 }: WithdrawSectionProps) {
   const config = getConfig();
-  const anchorId = config.ok ? config.anchorId : null;
+  const anchorId = anchorIdProp ?? (config.ok ? config.anchorId : null);
 
   const anchor = useMemo(() => {
     if (!anchorId) return null;
@@ -29,12 +33,18 @@ export function WithdrawSection({
     }
   }, [anchorId]);
 
-  const asset = anchor?.assets?.[0] ?? null;
+  const asset = useMemo(() => {
+    if (!anchor?.assets?.length) return null;
+    if (assetCodeProp) {
+      return anchor.assets.find((a) => a.code === assetCodeProp) ?? anchor.assets[0];
+    }
+    return anchor.assets[0];
+  }, [anchor, assetCodeProp]);
 
   const ramp = useMemo(() => {
     if (!address || !isTestnet || !anchorId) return null;
     try {
-      return makeRamp(address);
+      return makeRamp(address, anchorId);
     } catch {
       return null;
     }
@@ -44,7 +54,13 @@ export function WithdrawSection({
     return null;
   }
 
-  return <WithdrawForm key={address} ramp={ramp} asset={asset} />;
+  return (
+    <WithdrawForm
+      key={`${address}-${anchorId}-${asset.code}`}
+      ramp={ramp}
+      asset={asset}
+    />
+  );
 }
 
 interface WithdrawFormProps {
