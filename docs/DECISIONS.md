@@ -13,3 +13,6 @@ GitHub owner: redclay-labs
 | 2026-11-09 | Synchronous window opening in WithdrawSection | Open popup before awaiting async SEP-24 withdraw call to avoid browser popup blockers |
 | 2026-11-09 | Ref guard for completeWithdrawal in WithdrawSection | Use completedWithdrawalRef to ensure ramp.completeWithdrawal is called exactly once when status reaches pending_user_transfer_start |
 | 2026-11-09 | Use amount 5 in quickstart sample | sdf-testanchor enforces max limit of 10 SRT on testnet; amount 5 ensures quickstart sample succeeds out-of-the-box |
+| 2026-11-17 | Extract shared `validateOptionalAmount` helper in `lib/validation.ts` | Avoids duplicating amount validation across DepositSection, WithdrawSection, and PriceQuoteCalculator |
+| 2026-11-17 | Key inner forms by `${address}-${anchorId}-${asset.code}` | Ensures switching wallet, anchor, or asset resets active transaction state and cleans up watchers without synchronous `setState` in `useEffect` |
+| 2026-11-17 | Use `vitest.config.mts` | Eliminates Vite native configLoader ESM-in-CJS warning on every test run |

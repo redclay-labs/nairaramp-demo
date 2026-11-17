@@ -1,10 +1,6 @@
 # NairaRamp demo
 
-nairaramp-demo is a Next.js (App Router) reference application that demonstrates fiat-to-crypto deposit and withdrawal flows on Stellar Testnet using the Freighter browser wallet. It showcases end-to-end integration with the published `@nairaramp/core` and `@nairaramp/react` packages alongside a 15-minute developer quickstart.
-
-Live demo: LIVE_DEMO_URL
-
-Demo video: DEMO_VIDEO_URL
+nairaramp-demo is a Next.js (App Router) reference application that demonstrates fiat-to-crypto deposit and withdrawal flows on Stellar Testnet using the Freighter browser wallet. It showcases end-to-end integration with the published `@nairaramp/core` and `@nairaramp/react` packages—including testnet anchor/asset selection, SEP-38 indicative price quotes, SEP-24 deposits, and SEP-24 withdrawals—alongside a 15-minute developer quickstart.
 
 **Testnet only**: This demo connects exclusively to Stellar Testnet and rejects all other networks.
 
