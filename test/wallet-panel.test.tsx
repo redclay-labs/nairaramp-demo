@@ -140,4 +140,93 @@ describe("WalletPanel component", () => {
       ).toBeDefined();
     });
   });
+
+  it("surfaces getNetwork error during connect without calling connect", async () => {
+    vi.mocked(walletModule.isInstalled).mockResolvedValue({
+      ok: true,
+      data: true,
+    });
+    vi.mocked(walletModule.getNetwork)
+      .mockResolvedValueOnce({
+        ok: true,
+        data: { network: "TESTNET", isTestnet: true },
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        error: "Freighter network check failed",
+      });
+
+    render(<WalletPanel />);
+
+    const button = await screen.findByRole("button", {
+      name: /Connect Freighter/i,
+    });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert").textContent).toContain(
+        "Freighter network check failed"
+      );
+    });
+    expect(walletModule.connect).not.toHaveBeenCalled();
+  });
+
+  it("supports disconnecting and refreshing network state", async () => {
+    const testAddress = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
+
+    vi.mocked(walletModule.isInstalled).mockResolvedValue({
+      ok: true,
+      data: true,
+    });
+    vi.mocked(walletModule.getNetwork)
+      .mockResolvedValueOnce({
+        ok: true,
+        data: { network: "TESTNET", isTestnet: true },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        data: { network: "TESTNET", isTestnet: true },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        data: { network: "PUBLIC", isTestnet: false },
+      });
+    vi.mocked(walletModule.connect).mockResolvedValue({
+      ok: true,
+      data: { address: testAddress },
+    });
+
+    const onAddressChange = vi.fn();
+    const onNetworkChange = vi.fn();
+    render(
+      <WalletPanel
+        onAddressChange={onAddressChange}
+        onNetworkChange={onNetworkChange}
+      />
+    );
+
+    const connectBtn = await screen.findByRole("button", {
+      name: /Connect Freighter/i,
+    });
+    fireEvent.click(connectBtn);
+
+    const disconnectBtn = await screen.findByRole("button", {
+      name: /Disconnect/i,
+    });
+    fireEvent.click(disconnectBtn);
+
+    expect(onAddressChange).toHaveBeenLastCalledWith(null);
+
+    const refreshBtn = await screen.findByRole("button", {
+      name: /Refresh network/i,
+    });
+    fireEvent.click(refreshBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Wrong Network: Freighter must be connected to Stellar Testnet/i)
+      ).toBeDefined();
+    });
+    expect(onNetworkChange).toHaveBeenLastCalledWith(false);
+  });
 });
