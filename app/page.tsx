@@ -5,6 +5,7 @@ import { getAnchor } from "@nairaramp/core";
 import { getConfig } from "../lib/config";
 import { AnchorSelector } from "./components/AnchorSelector";
 import { DepositSection } from "./components/DepositSection";
+import { PriceQuoteCalculator } from "./components/PriceQuoteCalculator";
 import { WalletPanel } from "./components/WalletPanel";
 import { WithdrawSection } from "./components/WithdrawSection";
 
@@ -62,6 +63,12 @@ export default function Home() {
           setSelectedAssetCode(nextAssetCode);
         }}
         onAssetChange={setSelectedAssetCode}
+      />
+      <PriceQuoteCalculator
+        address={address}
+        isTestnet={isTestnet}
+        anchorId={selectedAnchorId}
+        assetCode={selectedAssetCode}
       />
       <DepositSection
         address={address}
