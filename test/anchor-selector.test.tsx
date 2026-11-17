@@ -91,3 +91,4 @@ describe("AnchorSelector component", () => {
     expect(onAssetChange).toHaveBeenCalledWith("USDC");
   });
 });
+

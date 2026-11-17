@@ -29,3 +29,4 @@ export function validateOptionalAmount(raw: string): AmountValidationResult {
 
   return { ok: true, value: trimmed };
 }
+
