@@ -183,3 +183,22 @@
   - `pnpm test`: Ran Vitest suite (24 tests across 5 test files), all passed (exit code 0).
   - `pnpm build`: Ran Next.js Turbopack production build, compiled successfully (exit code 0).
 - **Open issues:** None.
+
+
+## 2026-11-17 - Post-Audit Substantive Improvements (Phases 1–4)
+
+- **What was built:**
+  - `test/wallet.test.ts` & `test/ramp.test.ts` (`067f87f`): Added 19 unit tests covering `lib/wallet.ts` (`isInstalled`, `connect` fallback, `getNetwork`, `shortenAddress`) and `lib/ramp.ts` (`makeRamp` config guard and `createRamp` wiring).
+  - `lib/validation.ts`, `test/validation.test.ts`, `app/components/DepositSection.tsx`, `app/components/WithdrawSection.tsx` (`e86291c`): Added shared positive numeric amount validation, stable `useMemo` config dependencies, deposit completion banner with `transactionId` and reset button, Horizon trustline error distinction with re-check button, withdrawal reset flow, popup-blocked guidance, and `StatusTimeline` anchor `message` forwarding.
+  - `app/components/WalletPanel.tsx` & `test/wallet-panel.test.tsx` (`aa784cb`): Added `Refresh network` and `Disconnect` controls, surfaced `getNetwork()` errors in `handleConnect`, and added Horizon Testnet account funding status check.
+  - `app/components/AnchorSelector.tsx`, `test/anchor-selector.test.tsx`, `lib/ramp.ts`, `app/page.tsx` (`ee9154b`): Added dynamic testnet anchor and asset selector using `listAnchors({ network: "testnet" })` with automatic form state reset on anchor/asset change.
+  - `app/components/PriceQuoteCalculator.tsx`, `test/price-quote-calculator.test.tsx`, `app/page.tsx` (`93a9df3`): Added SEP-38 indicative price quote calculator using `ramp.getPrice()` with debounced queries, buy/sell direction switching, and `QUOTE_UNAVAILABLE` / unsupported-SEP-38 handling.
+  - `app/globals.css` & `app/page.tsx` (`70e0a26`): Added responsive layout, 44px minimum touch targets, `:focus-visible` outlines, and testnet badge styling.
+  - `vitest.config.mts`, `README.md`, `docs/DECISIONS.md` (`9eb6e08`): Eliminated Vite ESM-in-CJS config warning, removed unused `create-next-app` starter SVGs, removed literal `LIVE_DEMO_URL` / `DEMO_VIDEO_URL` placeholders from `README.md`, and logged engineering decisions.
+  - `test/a11y.test.tsx`, `package.json`, `pnpm-lock.yaml`, `VERSIONS.md` (`41728f5`): Added automated `axe-core@4.14.0` accessibility checks across all UI components and `Home`.
+- **Commands run with results:**
+  - `pnpm lint`: Passed (exit code 0).
+  - `pnpm typecheck`: Passed (exit code 0).
+  - `pnpm test`: 11 test files, 68 tests passed (exit code 0).
+  - `pnpm build`: Next.js 16.4.5 production build passed (exit code 0).
+- **Open issues:** Playwright E2E suite (optional Phase 4 item) deferred due to Windows OneDrive symlink constraints; unit, integration, and `axe-core` accessibility suites are complete and passing.
