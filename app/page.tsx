@@ -30,7 +30,7 @@ export default function Home() {
 
   if (!config.ok) {
     return (
-      <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
+      <main className="demo-container">
         <div
           role="alert"
           style={{
@@ -48,9 +48,17 @@ export default function Home() {
   }
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>NairaRamp demo</h1>
-      <p>Testnet only</p>
+    <main className="demo-container">
+      <header className="demo-header">
+        <div>
+          <h1 className="demo-title">NairaRamp demo</h1>
+          <p className="demo-subtitle">
+            Deposit and cash-out reference flow on Stellar Testnet with
+            Freighter
+          </p>
+        </div>
+        <span className="testnet-badge">Testnet only</span>
+      </header>
       <WalletPanel
         onAddressChange={setAddress}
         onNetworkChange={setIsTestnet}
